@@ -1,8 +1,4 @@
-﻿using System;
-using Domain.Repositories;
-using Services.Abstractions;
-
-namespace Services;
+﻿namespace Services;
 public sealed class ServiceManager : IServiceManager
 {
     private readonly Lazy<IOwnerService> lazyOwnerService;

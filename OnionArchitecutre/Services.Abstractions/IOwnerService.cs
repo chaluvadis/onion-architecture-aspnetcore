@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Contracts;
-
-namespace Services.Abstractions;
+﻿namespace Services.Abstractions;
 public interface IOwnerService
 {
     Task<IEnumerable<OwnerDto>> GetAllAsync(CancellationToken cancellationToken = default);

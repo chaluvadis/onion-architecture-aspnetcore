@@ -1,32 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Contracts;
-using Domain.Entities;
-using Domain.Exceptions;
-using Domain.Repositories;
-using Mapster;
-using Services.Abstractions;
-
-namespace Services;
+﻿namespace Services;
 internal sealed class AccountService : IAccountService
 {
-    private readonly IRepositoryManager _repositoryManager;
-    public AccountService(IRepositoryManager repositoryManager) => _repositoryManager = repositoryManager;
+    private readonly IRepositoryManager repositoryManager;
+    public AccountService(IRepositoryManager repositoryManager) => this.repositoryManager = repositoryManager;
     public async Task<IEnumerable<AccountDto>> GetAllByOwnerIdAsync(Guid ownerId, CancellationToken cancellationToken = default)
     {
-        var accounts = await _repositoryManager.AccountRepository.GetAllByOwnerIdAsync(ownerId, cancellationToken);
+        var accounts = await repositoryManager.AccountRepository.GetAllByOwnerIdAsync(ownerId, cancellationToken);
         return accounts.Adapt<IEnumerable<AccountDto>>();
     }
     public async Task<AccountDto> GetByIdAsync(Guid ownerId, Guid accountId, CancellationToken cancellationToken)
     {
-        var owner = await _repositoryManager.OwnerRepository.GetByIdAsync(ownerId, cancellationToken);
+        var owner = await repositoryManager.OwnerRepository.GetByIdAsync(ownerId, cancellationToken);
         if (owner is null)
         {
             throw new OwnerNotFoundException(ownerId);
         }
-        var account = await _repositoryManager.AccountRepository.GetByIdAsync(accountId, cancellationToken);
+        var account = await repositoryManager.AccountRepository.GetByIdAsync(accountId, cancellationToken);
         if (account is null)
         {
             throw new AccountNotFoundException(accountId);
@@ -40,26 +29,26 @@ internal sealed class AccountService : IAccountService
 
     public async Task<AccountDto> CreateAsync(Guid ownerId, AccountForCreationDto accountForCreationDto, CancellationToken cancellationToken = default)
     {
-        var owner = await _repositoryManager.OwnerRepository.GetByIdAsync(ownerId, cancellationToken);
+        var owner = await repositoryManager.OwnerRepository.GetByIdAsync(ownerId, cancellationToken);
         if (owner is null)
         {
             throw new OwnerNotFoundException(ownerId);
         }
         var account = accountForCreationDto.Adapt<Account>();
         account.OwnerId = owner.Id;
-        _repositoryManager.AccountRepository.Insert(account);
-        await _repositoryManager.UnitOfWork.SaveChangesAsync(cancellationToken);
+        repositoryManager.AccountRepository.Insert(account);
+        await repositoryManager.UnitOfWork.SaveChangesAsync(cancellationToken);
         return account.Adapt<AccountDto>();
     }
 
     public async Task DeleteAsync(Guid ownerId, Guid accountId, CancellationToken cancellationToken = default)
     {
-        var owner = await _repositoryManager.OwnerRepository.GetByIdAsync(ownerId, cancellationToken);
+        var owner = await repositoryManager.OwnerRepository.GetByIdAsync(ownerId, cancellationToken);
         if (owner is null)
         {
             throw new OwnerNotFoundException(ownerId);
         }
-        var account = await _repositoryManager.AccountRepository.GetByIdAsync(accountId, cancellationToken);
+        var account = await repositoryManager.AccountRepository.GetByIdAsync(accountId, cancellationToken);
         if (account is null)
         {
             throw new AccountNotFoundException(accountId);
@@ -68,7 +57,7 @@ internal sealed class AccountService : IAccountService
         {
             throw new AccountDoesNotBelongToOwnerException(owner.Id, account.Id);
         }
-        _repositoryManager.AccountRepository.Remove(account);
-        await _repositoryManager.UnitOfWork.SaveChangesAsync(cancellationToken);
+        repositoryManager.AccountRepository.Remove(account);
+        await repositoryManager.UnitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

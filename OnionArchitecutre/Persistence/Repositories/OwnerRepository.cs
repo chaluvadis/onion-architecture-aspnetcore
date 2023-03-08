@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Domain.Entities;
-using Domain.Repositories;
-using Microsoft.EntityFrameworkCore;
-
-namespace Persistence.Repositories;
+﻿namespace Persistence.Repositories;
 internal sealed class OwnerRepository : IOwnerRepository
 {
     private readonly RepositoryDbContext dbContext;

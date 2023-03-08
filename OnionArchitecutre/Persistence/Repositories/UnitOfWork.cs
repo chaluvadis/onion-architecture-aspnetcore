@@ -1,8 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using Domain.Repositories;
-
-namespace Persistence.Repositories;
+﻿namespace Persistence.Repositories;
 internal sealed class UnitOfWork : IUnitOfWork
 {
     private readonly RepositoryDbContext dbContext;
