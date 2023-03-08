@@ -9,76 +9,54 @@ using Domain.Repositories;
 using Mapster;
 using Services.Abstractions;
 
-namespace Services
+namespace Services;
+internal sealed class OwnerService : IOwnerService
 {
-    internal sealed class OwnerService : IOwnerService
+    private readonly IRepositoryManager _repositoryManager;
+    public OwnerService(IRepositoryManager repositoryManager) => _repositoryManager = repositoryManager;
+    public async Task<IEnumerable<OwnerDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        private readonly IRepositoryManager _repositoryManager;
+        var owners = await _repositoryManager.OwnerRepository.GetAllAsync(cancellationToken);
+        return owners.Adapt<IEnumerable<OwnerDto>>();
+    }
 
-        public OwnerService(IRepositoryManager repositoryManager) => _repositoryManager = repositoryManager;
-
-        public async Task<IEnumerable<OwnerDto>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<OwnerDto> GetByIdAsync(Guid ownerId, CancellationToken cancellationToken = default)
+    {
+        var owner = await _repositoryManager.OwnerRepository.GetByIdAsync(ownerId, cancellationToken);
+        if (owner is null)
         {
-            var owners = await _repositoryManager.OwnerRepository.GetAllAsync(cancellationToken);
-
-            var ownersDto = owners.Adapt<IEnumerable<OwnerDto>>();
-
-            return ownersDto;
+            throw new OwnerNotFoundException(ownerId);
         }
+        return owner.Adapt<OwnerDto>();
+    }
 
-        public async Task<OwnerDto> GetByIdAsync(Guid ownerId, CancellationToken cancellationToken = default)
+    public async Task<OwnerDto> CreateAsync(OwnerForCreationDto ownerForCreationDto, CancellationToken cancellationToken = default)
+    {
+        var owner = ownerForCreationDto.Adapt<Owner>();
+        _repositoryManager.OwnerRepository.Insert(owner);
+        await _repositoryManager.UnitOfWork.SaveChangesAsync(cancellationToken);
+        return owner.Adapt<OwnerDto>();
+    }
+    public async Task UpdateAsync(Guid ownerId, OwnerForUpdateDto ownerForUpdateDto, CancellationToken cancellationToken = default)
+    {
+        var owner = await _repositoryManager.OwnerRepository.GetByIdAsync(ownerId, cancellationToken);
+        if (owner is null)
         {
-            var owner = await _repositoryManager.OwnerRepository.GetByIdAsync(ownerId, cancellationToken);
-
-            if (owner is null)
-            {
-                throw new OwnerNotFoundException(ownerId);
-            }
-
-            var ownerDto = owner.Adapt<OwnerDto>();
-
-            return ownerDto;
+            throw new OwnerNotFoundException(ownerId);
         }
-
-        public async Task<OwnerDto> CreateAsync(OwnerForCreationDto ownerForCreationDto, CancellationToken cancellationToken = default)
+        owner.Name = ownerForUpdateDto.Name;
+        owner.DateOfBirth = ownerForUpdateDto.DateOfBirth;
+        owner.Address = ownerForUpdateDto.Address;
+        await _repositoryManager.UnitOfWork.SaveChangesAsync(cancellationToken);
+    }
+    public async Task DeleteAsync(Guid ownerId, CancellationToken cancellationToken = default)
+    {
+        var owner = await _repositoryManager.OwnerRepository.GetByIdAsync(ownerId, cancellationToken);
+        if (owner is null)
         {
-            var owner = ownerForCreationDto.Adapt<Owner>();
-
-            _repositoryManager.OwnerRepository.Insert(owner);
-
-            await _repositoryManager.UnitOfWork.SaveChangesAsync(cancellationToken);
-
-            return owner.Adapt<OwnerDto>();
+            throw new OwnerNotFoundException(ownerId);
         }
-
-        public async Task UpdateAsync(Guid ownerId, OwnerForUpdateDto ownerForUpdateDto, CancellationToken cancellationToken = default)
-        {
-            var owner = await _repositoryManager.OwnerRepository.GetByIdAsync(ownerId, cancellationToken);
-
-            if (owner is null)
-            {
-                throw new OwnerNotFoundException(ownerId);
-            }
-
-            owner.Name = ownerForUpdateDto.Name;
-            owner.DateOfBirth = ownerForUpdateDto.DateOfBirth;
-            owner.Address = ownerForUpdateDto.Address;
-
-            await _repositoryManager.UnitOfWork.SaveChangesAsync(cancellationToken);
-        }
-
-        public async Task DeleteAsync(Guid ownerId, CancellationToken cancellationToken = default)
-        {
-            var owner = await _repositoryManager.OwnerRepository.GetByIdAsync(ownerId, cancellationToken);
-
-            if (owner is null)
-            {
-                throw new OwnerNotFoundException(ownerId);
-            }
-
-            _repositoryManager.OwnerRepository.Remove(owner);
-
-            await _repositoryManager.UnitOfWork.SaveChangesAsync(cancellationToken);
-        }
+        _repositoryManager.OwnerRepository.Remove(owner);
+        await _repositoryManager.UnitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

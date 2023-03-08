@@ -1,15 +1,13 @@
 ﻿using System;
 
-namespace Contracts
+namespace Contracts;
+public class AccountDto
 {
-    public class AccountDto
-    {
-        public Guid Id { get; set; }
+    public Guid Id { get; set; }
 
-        public Guid OwnerId { get; set; }
+    public Guid OwnerId { get; set; }
 
-        public DateTime DateCreated { get; set; }
+    public DateTime DateCreated { get; set; }
 
-        public string AccountType { get; set; }
-    }
+    public string AccountType { get; set; }
 }

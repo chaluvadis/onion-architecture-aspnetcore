@@ -1,25 +1,19 @@
 ﻿using System;
 using Domain.Repositories;
 
-namespace Persistence.Repositories
+namespace Persistence.Repositories;
+public sealed class RepositoryManager : IRepositoryManager
 {
-    public sealed class RepositoryManager : IRepositoryManager
+    private readonly Lazy<IOwnerRepository> lazyOwnerRepository;
+    private readonly Lazy<IAccountRepository> lazyAccountRepository;
+    private readonly Lazy<IUnitOfWork> lazyUnitOfWork;
+    public RepositoryManager(RepositoryDbContext dbContext)
     {
-        private readonly Lazy<IOwnerRepository> _lazyOwnerRepository;
-        private readonly Lazy<IAccountRepository> _lazyAccountRepository;
-        private readonly Lazy<IUnitOfWork> _lazyUnitOfWork;
-
-        public RepositoryManager(RepositoryDbContext dbContext)
-        {
-            _lazyOwnerRepository = new Lazy<IOwnerRepository>(() => new OwnerRepository(dbContext));
-            _lazyAccountRepository = new Lazy<IAccountRepository>(() => new AccountRepository(dbContext));
-            _lazyUnitOfWork = new Lazy<IUnitOfWork>(() => new UnitOfWork(dbContext));
-        }
-
-        public IOwnerRepository OwnerRepository => _lazyOwnerRepository.Value;
-
-        public IAccountRepository AccountRepository => _lazyAccountRepository.Value;
-
-        public IUnitOfWork UnitOfWork => _lazyUnitOfWork.Value;
+        this.lazyOwnerRepository = new Lazy<IOwnerRepository>(() => new OwnerRepository(dbContext));
+        this.lazyAccountRepository = new Lazy<IAccountRepository>(() => new AccountRepository(dbContext));
+        this.lazyUnitOfWork = new Lazy<IUnitOfWork>(() => new UnitOfWork(dbContext));
     }
+    public IOwnerRepository OwnerRepository => lazyOwnerRepository.Value;
+    public IAccountRepository AccountRepository => lazyAccountRepository.Value;
+    public IUnitOfWork UnitOfWork => lazyUnitOfWork.Value;
 }
